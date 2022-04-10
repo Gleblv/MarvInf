@@ -2,6 +2,7 @@ import { Component } from 'react/cjs/react.production.min';
 
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/spinner';
+import ErrorMessage from '../errorMessage/errorMessage.js'
 
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
@@ -16,7 +17,8 @@ class RandomChar extends Component {
         character: {
         
         },
-        loading: true
+        loading: true,
+        error: false
     }
 
     marvelService = new MarvelService(); // создаём новое свойство. Тоже самое что this.marvelService = ... ;
@@ -28,20 +30,33 @@ class RandomChar extends Component {
         });
     }
 
+    onError = () => {
+        this.setState({ 
+            loading: false,
+            error: true
+        });
+    }
+
     updateChar = () => {
         const id = ~~(Math.random() * (1011400 - 1011000) + 1011000); // случайное число в промежутке от 1011000 до 1011400
         this.marvelService
             .getCharacteer(id) // получаем данные об одном персонаже (Метод написан в папке servesec/MarvelServise.js)
             .then(this.onCharacterLoaded) // пришедший объект сразу видоизменяется после метода getCharacteer. Пришедший аргумент автоматически подставляется в метод
+            .catch(this.onError); // в случае ошибки вызываем метод
     }
 
     render () {
-        const {character, loading} = this.state;
+        const {character, loading, error} = this.state;
+        const errorMessage = error ? <ErrorMessage/> : null; // если есть ошибка то показываем компонент с ошибкой
+        const spiner = loading ? <Spinner/> : null; // если есть загрузка то показываем компонент с загрузкой
+        const content = !(loading || error) ? <View character={character}/> : null; // если нет ошибки или загрузки то показываем контент
 
         return (
             <div className="randomchar">
                 {/* Подставляем либо компонент с вёрсткой (смотреть ниже) либо компонент с svg спинером */}
-                {loading ? <Spinner/> : <View character={character}/>} 
+                {errorMessage}
+                {spiner}
+                {content} 
                 <div className="randomchar__static">
                     <p className="randomchar__title">
                         Random character for today!<br/>
