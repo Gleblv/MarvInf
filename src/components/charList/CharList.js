@@ -1,16 +1,19 @@
 import { Component } from 'react/cjs/react.production.min';
 
 import MarvelService from '../../services/MarvelService';
+import Spinner from '../spinner/spinner';
+import ErrorMessage from '../errorMessage/errorMessage.js';
 
 import './charList.scss';
-import abyss from '../../resources/img/abyss.jpg';
 
 class CharList extends Component {
     constructor (props) {
         super(props);
         this.state = {
-            characters: []
-        }
+            characters: [],
+            loading: true,
+            error: false
+        };
     }
 
     marvelService = new MarvelService();
@@ -18,8 +21,17 @@ class CharList extends Component {
     componentDidMount () {
         this.marvelService
             .getAllCharacteers()
-            .then(data => this.setState(({characters: data}))) // помещаем ответ от сервера  с массивом персонажей в state
-                        
+            .then(data => this.setState(({
+                characters: data,
+                loading: false
+            }))) // помещаем ответ от сервера  с массивом персонажей в state 
+            .catch(this.onError)    
+    }
+
+    onError = () => {
+        this.setState({
+            error: true
+        })
     }
 
     pushCharacters = () => {
@@ -40,11 +52,17 @@ class CharList extends Component {
     }
 
     render () { 
-        const content = this.pushCharacters();
+        const {loading, error, characters} = this.state;
+
+        const errorMessage = error ? <ErrorMessage/> : null;
+        const spiner = loading ? <Spinner/> : null;
+        const content = (errorMessage === null && spiner === null) ? this.pushCharacters() : null
 
         return (
             <div className="char__list">
                 {content}
+                {spiner}
+                {errorMessage}
                 <button className="button button__main button__long">
                     <div className="inner">load more</div>
                 </button>
