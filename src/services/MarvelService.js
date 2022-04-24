@@ -1,5 +1,3 @@
-
-
 class MarvelService {
     _apiBase = "https://gateway.marvel.com:443/v1/public/";
     _apiKey = "apikey=56c5cb94b120889883bcc2d2ebcd6bb7";
@@ -35,11 +33,13 @@ class MarvelService {
 
     _transformCharacter = (character) => { // передаём индекс нужного персонажа из массива пришедшего с API
         return {
+            id: character.id,
             name: character.name,
             description: character.description,
             thumbnail: character.thumbnail.path + '.' + character.thumbnail.extension,
             homepage: character.urls[0].url,
-            wiki: character.urls[1].url
+            wiki: character.urls[1].url,
+            comics: character.comics.items // массив с объектами с названием комикса и ссылкой на него
         }
     }
 }

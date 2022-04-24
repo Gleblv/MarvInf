@@ -36,7 +36,15 @@ class RandomChar extends Component {
         });
     }
 
+    onCharLoading = () => { // метод чтобы показывался спинер
+        this.setState({
+            loading: true
+        });
+    }
+
     updateChar = () => {
+        this.onCharLoading(); // сначала показываем пользователю что данные загружаются
+
         const id = ~~(Math.random() * (1011400 - 1011000) + 1011000); // случайное число в промежутке от 1011000 до 1011400
         this.marvelService
             .getCharacteer(id) // получаем данные об одном персонаже (Метод написан в папке servesec/MarvelServise.js)
