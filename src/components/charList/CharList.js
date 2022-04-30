@@ -12,20 +12,46 @@ class CharList extends Component {
         this.state = {
             characters: [],
             loading: true,
-            error: false
+            error: false,
+            newCharactersLoading: false,
+            offset: 210,
+            charactersEnded: false
         };
     }
 
     marvelService = new MarvelService();
 
     componentDidMount () {
+        this.onRequest();    
+    }
+
+    onRequest = (offset) => {
+        this.onCharListLoading();
         this.marvelService
-            .getAllCharacteers()
-            .then(data => this.setState(({
-                characters: data,
-                loading: false
-            }))) // помещаем ответ от сервера  с массивом персонажей в state 
-            .catch(this.onError)    
+            .getAllCharacteers(offset)
+            .then(this.onCharListLoaded)
+            .catch(this.onError)
+    }
+
+    onCharListLoaded = (newCharacters) => { // данные персонажей помещаем в массив в state
+        let ended = false; 
+        if (newCharacters.length < 9) { // проверяем не закончились ли персонажи
+            ended = true;
+        }
+
+        this.setState(({characters, offset}) => ({
+            characters: [...characters, ...newCharacters], // добавляем новыее данные о персонажах в массив к старым
+            loading: false,
+            newCharactersLoading: false,
+            offset: offset + 9,
+            charactersEnded: ended
+        }))
+    }
+
+    onCharListLoading = () => {
+        this.setState({
+            newCharactersLoading: true
+        })
     }
 
     onError = () => {
@@ -60,7 +86,7 @@ class CharList extends Component {
     }
 
     render () { 
-        const {loading, error} = this.state;
+        const {loading, error, newItemLoading, offset, charactersEnded} = this.state;
 
         const errorMessage = error ? <ErrorMessage/> : null;
         const spiner = loading ? <Spinner/> : null;
@@ -71,7 +97,11 @@ class CharList extends Component {
                 {content}
                 {spiner}
                 {errorMessage}
-                <button className="button button__main button__long">
+                <button 
+                    className="button button__main button__long"
+                    disabled={newItemLoading}
+                    style={{'display': charactersEnded ? 'none' : 'block'}} // если персонажи для подгрухки закончаться, то кнопка пропадёт
+                    onClick={() => this.onRequest(offset)}>
                     <div className="inner">load more</div>
                 </button>
             </div>

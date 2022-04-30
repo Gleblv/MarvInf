@@ -1,6 +1,7 @@
 class MarvelService {
     _apiBase = "https://gateway.marvel.com:443/v1/public/";
     _apiKey = "apikey=56c5cb94b120889883bcc2d2ebcd6bb7";
+    _baseOffset = 210; // для подгрузки нвоых персонажей
 
     getResoursec = async (url) => { // запрос с сервера
         let res = await fetch(url);
@@ -12,8 +13,8 @@ class MarvelService {
         return await res.json();
     }
 
-    getAllCharacteers = async () => { // Метод чтобы получить всех персонажей
-        const res = await this.getResoursec(`${this._apiBase}characters?limit=9&offset=210&${this._apiKey}`); // записываем ответ от сервера в переменную
+    getAllCharacteers = async (offset = this._baseOffset) => { // Метод чтобы получить всех персонажей
+        const res = await this.getResoursec(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apiKey}`); // записываем ответ от сервера в переменную
         return res.data.results.map(this._transformCharacter); // передаём функцию по которой будем изменять элементы массива
     }
 
