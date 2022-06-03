@@ -1,5 +1,6 @@
-import { Component } from 'react/cjs/react.production.min';
+import { useState, useEffect, useRef } from 'react';
 import React from 'react';
+import propTypes from 'prop-types';
 
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/spinner';
@@ -7,67 +8,54 @@ import ErrorMessage from '../errorMessage/errorMessage.js';
 
 import './charList.scss';
 
-class CharList extends Component {
-    constructor (props) {
-        super(props);
-        this.state = {
-            characters: [],
-            loading: true,
-            error: false,
-            newCharactersLoading: false,
-            offset: 210,
-            charactersEnded: false
-        };
-    }
+const CharList = (props) => {
 
-    marvelService = new MarvelService();
+    const [characters, setCharacters] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [newCharactersLoading, setNewCharactersLoading] = useState(false);
+    const [offset, setOffset] = useState(210);
+    const [charactersEnded, setCharactersEnded] = useState(false);
 
-    componentDidMount () {
-        this.onRequest();    
-    }
+    const marvelService = new MarvelService();
 
-    onRequest = (offset) => {
-        this.onCharListLoading();
-        this.marvelService
+    useEffect(() => { // запрос при первой загрузке страницы
+        onRequest();
+    }, [])
+
+    const onRequest = (offset) => { // запрос с сервера
+        onCharListLoading();
+        marvelService
             .getAllCharacteers(offset)
-            .then(this.onCharListLoaded)
-            .catch(this.onError)
+            .then(onCharListLoaded)
+            .catch(onError)
     }
 
-    onCharListLoaded = (newCharacters) => { // данные персонажей помещаем в массив в state
+    const onCharListLoaded = (newCharacters) => { // данные персонажей помещаем в массив в state
         let ended = false; 
         if (newCharacters.length < 9) { // проверяем не закончились ли персонажи
             ended = true;
         }
 
-        this.setState(({characters, offset}) => ({
-            characters: [...characters, ...newCharacters], // добавляем новыее данные о персонажах в массив к старым
-            loading: false,
-            newCharactersLoading: false,
-            offset: offset + 9,
-            charactersEnded: ended
-        }))
+        setCharacters(characters => [...characters, ...newCharacters]); // добавляем новыее данные о персонажах в массив к старым
+        setLoading(false);
+        setNewCharactersLoading(false);
+        setOffset(offset => offset + 9);
+        setCharactersEnded(ended);
     }
 
-    onCharListLoading = () => {
-        this.setState({
-            newCharactersLoading: true
-        })
+    const onCharListLoading = () => {
+        setNewCharactersLoading(true);
     }
 
-    onError = () => {
-        this.setState({
-            error: true
-        })
+    const onError = () => {
+        setError(true);
+        setLoading(false);
     }
 
-    itemRefs = [];
+    const itemRefs = useRef([]); // массив ссылок на DOM-элементы
 
-    setRef = (ref) => {
-        this.itemRefs.push(ref);
-    }
-
-    focusOnItem = (id) => {
+    const focusOnItem = (id) => {
         // Я реализовал вариант чуть сложнее, и с классом и с фокусом
         // Но в теории можно оставить только фокус, и его в стилях использовать вместо класса
         // На самом деле, решение с css-классом можно сделать, вынеся персонажа
@@ -75,14 +63,14 @@ class CharList extends Component {
         // и не факт, что мы выиграем по оптимизации за счет бОльшего кол-ва элементов
 
         // По возможности, не злоупотребляйте рефами, только в крайних случаях
-        this.itemRefs.forEach(item => item.classList.remove('char__item_selected'));
-        this.itemRefs[id].classList.add('char__item_selected');
-        this.itemRefs[id].focus();
+        itemRefs.current.forEach(item => item.classList.remove('char__item_selected')); 
+        itemRefs.current[id].classList.add('char__item_selected');
+        itemRefs.current[id].focus();
     }
 
-    pushCharacters = () => {
+    const pushCharacters = () => {
 
-        const charactersList = this.state.characters.map((item, i) => { // перебираем массив из state и возвращаем массив с элементами списка
+        const charactersList = characters.map((item, i) => { // перебираем массив из state и возвращаем массив с элементами списка
             let imgStyle = {'objectFit' : 'cover'};
             if (item.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
                 imgStyle = {'objectFit' : 'contain'};
@@ -90,11 +78,11 @@ class CharList extends Component {
 
             return (
                 <li className='char__item'
-                    ref={this.setRef}
+                    ref={el => itemRefs.current[i] = el} // el - ссылка на DOM-элемент
                     key={item.id}
                     onClick={() => {
-                        this.props.onCharSelected(item.id);
-                        this.focusOnItem(i);
+                        props.onCharSelected(item.id);
+                        focusOnItem(i);
                     }}>
                     <img src={item.thumbnail} alt={item.name} style={imgStyle}/>
                     <div className="char__name">{item.name}</div>
@@ -109,28 +97,28 @@ class CharList extends Component {
         )
     }
 
-    render () { 
-        const {loading, error, newItemLoading, offset, charactersEnded} = this.state;
+    const errorMessage = error ? <ErrorMessage/> : null;
+    const spiner = loading ? <Spinner/> : null;
+    const content = (errorMessage === null && spiner === null) ? pushCharacters() : null
 
-        const errorMessage = error ? <ErrorMessage/> : null;
-        const spiner = loading ? <Spinner/> : null;
-        const content = (errorMessage === null && spiner === null) ? this.pushCharacters() : null
+    return (
+        <div className="char__list">
+            {content}
+            {spiner}
+            {errorMessage}
+            <button 
+                className="button button__main button__long"
+                disabled={newCharactersLoading}
+                style={{'display': charactersEnded ? 'none' : 'block'}} // если персонажи для подгрухки закончаться, то кнопка пропадёт
+                onClick={() => onRequest(offset)}>
+                <div className="inner">load more</div>
+            </button>
+        </div>
+    )
+}
 
-        return (
-            <div className="char__list">
-                {content}
-                {spiner}
-                {errorMessage}
-                <button 
-                    className="button button__main button__long"
-                    disabled={newItemLoading}
-                    style={{'display': charactersEnded ? 'none' : 'block'}} // если персонажи для подгрухки закончаться, то кнопка пропадёт
-                    onClick={() => this.onRequest(offset)}>
-                    <div className="inner">load more</div>
-                </button>
-            </div>
-        )
-    }
+CharList.propTypes = {
+    onCharSelected: propTypes.func.isRequired
 }
 
 export default CharList;

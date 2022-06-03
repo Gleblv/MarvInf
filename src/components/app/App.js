@@ -1,4 +1,4 @@
-import { Component } from "react/cjs/react.production.min";
+import { useState } from "react";
 import propTypes from "prop-types";
 
 import AppHeader from "../appHeader/AppHeader";
@@ -9,38 +9,33 @@ import ErrorBoundary from "../errorBoundary/ErrorBoundary";
 
 import decoration from '../../resources/img/vision.png';
 
-class App extends Component {
-    state = {
-        selectedChar: null 
+const App = () => {
+
+    const [selectedChar, setSelectedChar] = useState(null);
+
+    const onCharSelected = (id) => { // получвем id персонажа по которому кликнули из компонента CharList и заносим его в state
+        setSelectedChar(id);
     }
 
-    onCharSelected = (id) => { // получвем id персонажа по которому кликнули из компонента CharList и заносим его в state
-        this.setState({
-            selectedChar: id
-        })
-    }
-
-    render() {
-        return (
-            <div className="app">
-                <AppHeader/>
-                <main>
+    return (
+        <div className="app">
+            <AppHeader/>
+            <main>
+                <ErrorBoundary>
+                    <RandomChar/>
+                </ErrorBoundary>
+                <div className="char__content">
                     <ErrorBoundary>
-                        <RandomChar/>
+                        <CharList onCharSelected={onCharSelected}/>
                     </ErrorBoundary>
-                    <div className="char__content">
-                        <ErrorBoundary>
-                            <CharList onCharSelected={this.onCharSelected}/>
-                        </ErrorBoundary>
-                        <ErrorBoundary> {/* Предохранитель */}
-                            <CharInfo charId={this.state.selectedChar}/> {/* передаём id персонажа из state в CharInfo */}
-                        </ErrorBoundary>
-                    </div>
-                    <img className="bg-decoration" src={decoration} alt="vision"/>
-                </main>
-            </div>
-        )
-    }
+                    <ErrorBoundary> {/* Предохранитель */}
+                        <CharInfo charId={selectedChar}/> {/* передаём id персонажа из state в CharInfo */}
+                    </ErrorBoundary>
+                </div>
+                <img className="bg-decoration" src={decoration} alt="vision"/>
+            </main>
+        </div>
+    )
 }
 
 App.propTypes = {
