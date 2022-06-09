@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/spinner';
 import ErrorMessage from '../errorMessage/errorMessage.js'
 
@@ -9,10 +9,8 @@ import mjolnir from '../../resources/img/mjolnir.png';
 
 const RandomChar = () => {
     const [character, setCharacter] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
 
-    const marvelService = new MarvelService(); // создаём новое свойство. Тоже самое что this.marvelService = ... ;
+    const {loading, error, getCharacteer, clearError} = useMarvelService(); // создаём новое свойство. Тоже самое что this.marvelService = ... ;
 
     useEffect(() => {
         updateChar(); // вызываем метод один раз чтобы при загрузке сайта отрендерился случайный персонаж
@@ -20,28 +18,13 @@ const RandomChar = () => {
 
     const onCharacterLoaded = (character) => { // перекидываем пришедшие данные в state
         setCharacter(character);
-        setLoading(false);
-        setError(false);
-    }
-
-    const onError = () => {
-        setLoading(false);
-        setError(true);
-    }
-
-    const onCharLoading = () => { // метод чтобы показывался спинер
-        setLoading(true);
-        setError(false);
     }
 
     const updateChar = () => {
-        onCharLoading(); // сначала показываем пользователю что данные загружаются
-
+        clearError();
         const id = ~~(Math.random() * (1011400 - 1011000) + 1011000); // случайное число в промежутке от 1011000 до 1011400
-        marvelService
-            .getCharacteer(id) // получаем данные об одном персонаже (Метод написан в папке servesec/MarvelServise.js)
+        getCharacteer(id) // получаем данные об одном персонаже (Метод написан в папке servesec/MarvelServise.js)
             .then(onCharacterLoaded) // пришедший объект сразу видоизменяется после метода getCharacteer. Пришедший аргумент автоматически подставляется в метод
-            .catch(onError); // в случае ошибки вызываем метод
     }
 
     const errorMessage = error ? <ErrorMessage/> : null; // если есть ошибка то показываем компонент с ошибкой

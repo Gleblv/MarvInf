@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import propTypes from 'prop-types';
 
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/spinner';
 import ErrorMessage from '../errorMessage/errorMessage';
 import Skeleton from '../skeleton/Skeleton';
@@ -10,10 +10,8 @@ import './charInfo.scss';
 
 const CharInfo = (props) => {
     const [character, setCharacters] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
 
-    const marvelService = new MarvelService();
+    const {loading, error, getCharacteer, clearError} = useMarvelService();
 
     useEffect(() => {
         updateChar();
@@ -30,27 +28,14 @@ const CharInfo = (props) => {
             return;
         }
 
-        onCharLoading();
+        clearError();
 
-        marvelService.getCharacteer(charId)
+        getCharacteer(charId)
             .then(onCharacterLoaded)
-            .catch(onError)
     }
 
     const onCharacterLoaded = (character) => { // перекидываем пришедшие данные в state
         setCharacters(character);
-        setLoading(false);
-        setError(false);
-    }
-
-    const onError = () => {
-        setLoading(false);
-        setError(true);
-    }
-
-    const onCharLoading = () => { // метод чтобы показывался спинер
-        setLoading(true);
-        setError(false);
     }
 
     const skeleton = character || loading || error ? null : <Skeleton/> // если всё загрузилось, но не выбран персонаж, то вставляем заглушку

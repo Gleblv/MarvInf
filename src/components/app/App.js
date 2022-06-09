@@ -28,10 +28,10 @@ const App = () => {
                     <ErrorBoundary>
                         <CharList onCharSelected={onCharSelected}/>
                     </ErrorBoundary>
-                    <ErrorBoundary> {/* Предохранитель */}
+                    <ErrorBoundary> {/* Предохранитель  */}
                         <CharInfo charId={selectedChar}/> {/* передаём id персонажа из state в CharInfo */}
-                    </ErrorBoundary>
-                </div>
+                    </ErrorBoundary> 
+                </div> 
                 <img className="bg-decoration" src={decoration} alt="vision"/>
             </main>
         </div>

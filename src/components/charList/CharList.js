@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import React from 'react';
 import propTypes from 'prop-types';
 
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/spinner';
 import ErrorMessage from '../errorMessage/errorMessage.js';
 
@@ -11,24 +11,21 @@ import './charList.scss';
 const CharList = (props) => {
 
     const [characters, setCharacters] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
     const [newCharactersLoading, setNewCharactersLoading] = useState(false);
     const [offset, setOffset] = useState(210);
     const [charactersEnded, setCharactersEnded] = useState(false);
 
-    const marvelService = new MarvelService();
+    const {loading, error, getAllCharacteers} = useMarvelService();
 
     useEffect(() => { // запрос при первой загрузке страницы
-        onRequest();
+        onRequest(offset, true);
     }, [])
 
-    const onRequest = (offset) => { // запрос с сервера
-        onCharListLoading();
-        marvelService
-            .getAllCharacteers(offset)
+    const onRequest = (offset, initial) => { // запрос с сервера
+        initial ? setNewCharactersLoading(true) : setNewCharactersLoading(false);
+        setNewCharactersLoading(true);
+        getAllCharacteers(offset)
             .then(onCharListLoaded)
-            .catch(onError)
     }
 
     const onCharListLoaded = (newCharacters) => { // данные персонажей помещаем в массив в state
@@ -38,19 +35,9 @@ const CharList = (props) => {
         }
 
         setCharacters(characters => [...characters, ...newCharacters]); // добавляем новыее данные о персонажах в массив к старым
-        setLoading(false);
         setNewCharactersLoading(false);
         setOffset(offset => offset + 9);
         setCharactersEnded(ended);
-    }
-
-    const onCharListLoading = () => {
-        setNewCharactersLoading(true);
-    }
-
-    const onError = () => {
-        setError(true);
-        setLoading(false);
     }
 
     const itemRefs = useRef([]); // массив ссылок на DOM-элементы
@@ -98,7 +85,7 @@ const CharList = (props) => {
     }
 
     const errorMessage = error ? <ErrorMessage/> : null;
-    const spiner = loading ? <Spinner/> : null;
+    const spiner = loading && !newCharactersLoading ? <Spinner/> : null;
     const content = (errorMessage === null && spiner === null) ? pushCharacters() : null
 
     return (

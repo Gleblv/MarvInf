@@ -1,25 +1,19 @@
-class MarvelService {
-    _apiBase = "https://gateway.marvel.com:443/v1/public/";
-    _apiKey = "apikey=56c5cb94b120889883bcc2d2ebcd6bb7";
-    _baseOffset = 210; // для подгрузки нвоых персонажей
+import { useHttp } from "../hooks/http.hook";
 
-    getResoursec = async (url) => { // запрос с сервера
-        let res = await fetch(url);
-        
-        if (!res.ok) {
-            throw new Error(`Could not fetch ${url}, status ${res.status}`);
-        }
+const useMarvelService = () => {
+    const {loading, request, error, clearError} = useHttp();
 
-        return await res.json();
+    const _apiBase = "https://gateway.marvel.com:443/v1/public/";
+    const _apiKey = "apikey=56c5cb94b120889883bcc2d2ebcd6bb7";
+    const _baseOffset = 210; // для подгрузки нвоых персонажей
+
+    const getAllCharacteers = async (offset = _baseOffset) => { // Метод чтобы получить всех персонажей
+        const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_apiKey}`); // записываем ответ от сервера в переменную
+        return res.data.results.map(_transformCharacter); // передаём функцию по которой будем изменять элементы массива
     }
 
-    getAllCharacteers = async (offset = this._baseOffset) => { // Метод чтобы получить всех персонажей
-        const res = await this.getResoursec(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apiKey}`); // записываем ответ от сервера в переменную
-        return res.data.results.map(this._transformCharacter); // передаём функцию по которой будем изменять элементы массива
-    }
-
-    getCharacteer = async (id) => { // Метод чтобы получить одного персонажа по id
-        const res = await this.getResoursec(`${this._apiBase}characters/${id}?${this._apiKey}`); // записываем ответ от сервера в переменную
+    const getCharacteer = async (id) => { // Метод чтобы получить одного персонажа по id
+        const res = await request(`${_apiBase}characters/${id}?${_apiKey}`); // записываем ответ от сервера в переменную
 
         if (res.data.results[0].description === "") { // если нет описания то вставляем заглушку
             res.data.results[0].description = "Description of the character is temporarily unavailable";
@@ -29,10 +23,10 @@ class MarvelService {
             res.data.results[0].description.substring = res.data.results[0].description.substring(0, 220);
         }
 
-        return this._transformCharacter(res.data.results[0]); // возвращаем уже видоизменённый объект
+        return _transformCharacter(res.data.results[0]); // возвращаем уже видоизменённый объект
     }
 
-    _transformCharacter = (character) => { // передаём индекс нужного персонажа из массива пришедшего с API
+    const _transformCharacter = (character) => { // передаём индекс нужного персонажа из массива пришедшего с API
         return {
             id: character.id,
             name: character.name,
@@ -43,6 +37,8 @@ class MarvelService {
             comics: character.comics.items // массив с объектами с названием комикса и ссылкой на него
         }
     }
+
+    return {loading, error, getAllCharacteers, getCharacteer, clearError}
 }
 
-export default MarvelService;
+export default useMarvelService;
