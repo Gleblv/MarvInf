@@ -19,6 +19,7 @@ const CharList = (props) => {
 
     useEffect(() => { // запрос при первой загрузке страницы
         onRequest(offset, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const onRequest = (offset, initial) => { // запрос с сервера
