@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { MainPage, ComicsPage } from "../pages";
+
 import AppHeader from "../appHeader/AppHeader";
 
 const App = () => {
@@ -10,14 +11,10 @@ const App = () => {
             <div className="app">
             <AppHeader/>
                 <main>
-                    <Switch>
-                        <Route exact path="/"> {/* Маршрут */}
-                            <MainPage/>
-                        </Route> {/* Маршрут */}
-                        <Route exact path="/comics">
-                            <ComicsPage/>
-                        </Route>
-                    </Switch>
+                    <Routes>
+                        <Route path="/" element={<MainPage/>}/> {/* Маршрут */}
+                        <Route path="/comics" element={<ComicsPage/>}/>
+                    </Routes>
                 </main>
             </div>
         </Router>
