@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import { MainPage, ComicsPage } from "../pages";
+import { MainPage, ComicsPage, Page404 } from "../pages";
 
 import AppHeader from "../appHeader/AppHeader";
 
@@ -11,10 +11,17 @@ const App = () => {
             <div className="app">
             <AppHeader/>
                 <main>
-                    <Routes>
-                        <Route path="/" element={<MainPage/>}/> {/* Маршрут */}
-                        <Route path="/comics" element={<ComicsPage/>}/>
-                    </Routes>
+                    <Switch>
+                        <Route exact path="/">
+                            <MainPage/>
+                        </Route> {/* Маршрут */}
+                        <Route exact path="/comics">
+                            <ComicsPage/>
+                        </Route> {/* Маршрут */}
+                        <Route path="*"> {/* Страница которая будет выводится при нерпавильном адресе */}
+                            <Page404/>
+                        </Route>
+                    </Switch>
                 </main>
             </div>
         </Router>
