@@ -15,10 +15,12 @@ const CharInfo = (props) => {
 
     useEffect(() => {
         updateChar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
         updateChar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.charId])
 
     const updateChar = () => {

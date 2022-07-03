@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import { MainPage, ComicsPage, Page404 } from "../pages";
+import { MainPage, ComicsPage, SingleComicPage, Page404 } from "../pages";
 
 import AppHeader from "../appHeader/AppHeader";
 
@@ -18,6 +18,9 @@ const App = () => {
                         <Route exact path="/comics">
                             <ComicsPage/>
                         </Route> {/* Маршрут */}
+                        <Route exact path="/comics/:comicId">
+                            <SingleComicPage/>
+                        </Route>
                         <Route path="*"> {/* Страница которая будет выводится при нерпавильном адресе */}
                             <Page404/>
                         </Route>
