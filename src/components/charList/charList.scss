@@ -41,3 +41,12 @@
         color: #fff;
     }
 }
+
+.char-card-enter {
+    transform: translate(0, 0);
+}
+
+.char-card-enter-active {
+    transform: translate(0, -20px);
+    transition: transform 300ms;
+}

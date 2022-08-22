@@ -19,11 +19,16 @@ const useMarvelService = () => {
             res.data.results[0].description = "Description of the character is temporarily unavailable";
         } 
 
-        if (res.data.results[0].description.length > 220) { // если описание слишеом длинное то обрезаем
-            res.data.results[0].description.substring = res.data.results[0].description.substring(0, 220);
-        }
+        // if (res.data.results[0].description.length > 220) { // если описание слишеом длинное то обрезаем
+        //     res.data.results[0].description.substring = res.data.results[0].description.substring(0, 220);
+        // }
 
         return _transformCharacter(res.data.results[0]); // возвращаем уже видоизменённый объект
+    }
+
+    const getCharacterByName = async (name) => {
+        const res = await request(`${_apiBase}characters?name=${name}&${_apiKey}`);
+        return res.data.results.map(_transformCharacter);
     }
 
     const getComics = async (offset = _baseOffset) => {
@@ -62,7 +67,7 @@ const useMarvelService = () => {
         }
     }
 
-    return {loading, error, getAllCharacteers, getCharacteer, getComics, getComic, clearError}
+    return {loading, error, getAllCharacteers, getCharacteer, getCharacterByName, getComics, getComic, clearError}
 }
 
 export default useMarvelService;

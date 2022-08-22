@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import React from 'react';
 import propTypes from 'prop-types';
+import { CSSTransition } from 'react-transition-group';
 
 import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/spinner';
@@ -14,13 +15,14 @@ const CharList = (props) => {
     const [newCharactersLoading, setNewCharactersLoading] = useState(false);
     const [offset, setOffset] = useState(210);
     const [charactersEnded, setCharactersEnded] = useState(false);
+    const [animTriger, setAnimTriger] = useState(false);
 
     const {loading, error, getAllCharacteers} = useMarvelService();
 
     useEffect(() => { // запрос при первой загрузке страницы
         onRequest(offset, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []) 
 
     const onRequest = (offset, initial) => { // запрос с сервера
         initial ? setNewCharactersLoading(true) : setNewCharactersLoading(false);
@@ -65,16 +67,19 @@ const CharList = (props) => {
             }
 
             return (
-                <li className='char__item'
+                <CSSTransition in={animTriger} timeout={1000} classNames="char-card">
+                    <li className='char__item'
                     ref={el => itemRefs.current[i] = el} // el - ссылка на DOM-элемент
                     key={item.id}
                     onClick={() => {
                         props.onCharSelected(item.id);
                         focusOnItem(i);
+                        setAnimTriger(true);
                     }}>
                     <img src={item.thumbnail} alt={item.name} style={imgStyle}/>
                     <div className="char__name">{item.name}</div>
                 </li>
+                </CSSTransition>
             )
         })
 
