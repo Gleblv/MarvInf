@@ -9,15 +9,34 @@ import ErrorMessage from '../errorMessage/errorMessage.js';
 
 import './charList.scss';
 
+const setContent = (process, Component, newCharactersLoading) => {
+    switch(process) {
+        case 'waiting':
+            return <Spinner/>
+            break;
+        case 'loading':
+            return newCharactersLoading ? <Component/> : <Spinner/>
+            break;
+        case 'confirmed':
+            return <Component/>
+            break;
+        case 'error':
+            return <ErrorMessage/>
+            break;
+        default:
+            throw new Error('Unexpected process state');
+    }
+}
+
 const CharList = (props) => {
 
     const [characters, setCharacters] = useState([]);
-    const [newCharactersLoading, setNewCharactersLoading] = useState(false);
+    const [newCharactersLoading, setNewCharactersLoading] = useState(false); // проверяем грузятся ли дополнительные компоненты 
     const [offset, setOffset] = useState(210);
     const [charactersEnded, setCharactersEnded] = useState(false);
     const [animTriger, setAnimTriger] = useState(false);
 
-    const {loading, error, getAllCharacteers} = useMarvelService();
+    const {getAllCharacteers, process, setProcess} = useMarvelService();
 
     useEffect(() => { // запрос при первой загрузке страницы
         onRequest(offset, true);
@@ -29,6 +48,7 @@ const CharList = (props) => {
         setNewCharactersLoading(true);
         getAllCharacteers(offset)
             .then(onCharListLoaded)
+            .then(() => setProcess('confirmed'))
     }
 
     const onCharListLoaded = (newCharacters) => { // данные персонажей помещаем в массив в state
@@ -90,15 +110,10 @@ const CharList = (props) => {
         )
     }
 
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spiner = loading && !newCharactersLoading ? <Spinner/> : null;
-    const content = (errorMessage === null && spiner === null) ? pushCharacters() : null
-
     return (
-        <div className="char__list">
-            {content}
-            {spiner}
-            {errorMessage}
+        <div className="char__list"> 
+            {/* pushCharacters - функция которая возвращает список элементов charactersList */}
+            {setContent(process, () => pushCharacters(), newCharactersLoading)} 
             <button 
                 className="button button__main button__long"
                 disabled={newCharactersLoading}

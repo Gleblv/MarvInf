@@ -7,13 +7,32 @@ import Spinner from '../spinner/spinner';
 
 import './comicsList.scss';
 
+const setContent = (process, Component, newCharactersLoading) => {
+    switch(process) {
+        case 'waiting':
+            return <Spinner/>
+            break;
+        case 'loading':
+            return newCharactersLoading ? <Component/> : <Spinner/>
+            break;
+        case 'confirmed':
+            return <Component/>
+            break;
+        case 'error':
+            return <ErrorMessage/>
+            break;
+        default:
+            throw new Error('Unexpected process state');
+    }
+}
+
 const ComicsList = () => {
     const [comics, setComics] = useState([]);
     const [offset, setOffset] = useState(0);
     const [comicsLoaded, setComicsLoaded] = useState(false);
     const [comicsEnded, setComicsEnded] = useState(false);
 
-    const {loading, error, getComics} = useMarvelService();
+    const {loading, error, getComics, process, setProcess} = useMarvelService();
 
     useEffect(() => {
         onRequest(offset, true);
@@ -23,7 +42,8 @@ const ComicsList = () => {
     const onRequest = (offset, initial) => { // запрос 
         initial ? setComicsLoaded(false) : setComicsLoaded(true);
         getComics(offset)
-            .then(onNewComicsLoaded);
+            .then(onNewComicsLoaded)
+            .then(() => setProcess('confirmed'))
     }
 
     const onNewComicsLoaded = (newComics) => { // добавление доп.данных
@@ -59,16 +79,9 @@ const ComicsList = () => {
         )
     }
 
-    const content = loading && error ? null : renderItems(comics);
-
-    const spinner = loading & !comicsLoaded ? <Spinner/> : null;
-    const errorMessage = error ? <ErrorMessage/> : null;
-
     return (
         <div className="comics__list">
-            {content}
-            {spinner}
-            {errorMessage}
+            {setContent(process, () => renderItems(comics), comicsLoaded)}
             <button 
                 disabled={comicsLoaded}
                 className="button button__main button__long"

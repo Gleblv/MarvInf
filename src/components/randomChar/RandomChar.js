@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import useMarvelService from '../../services/MarvelService';
-import Spinner from '../spinner/spinner';
-import ErrorMessage from '../errorMessage/errorMessage.js'
+import setContent from '../../utils/setContent';
 
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
@@ -10,7 +9,7 @@ import mjolnir from '../../resources/img/mjolnir.png';
 const RandomChar = () => {
     const [character, setCharacter] = useState({});
 
-    const {loading, error, getCharacteer, clearError} = useMarvelService(); // создаём новое свойство. Тоже самое что this.marvelService = ... ;
+    const {getCharacteer, clearError, process, setProcess} = useMarvelService(); // создаём новое свойство. Тоже самое что this.marvelService = ... ;
 
     useEffect(() => {
         updateChar(); // вызываем метод один раз чтобы при загрузке сайта отрендерился случайный персонаж
@@ -25,18 +24,13 @@ const RandomChar = () => {
         const id = ~~(Math.random() * (1011400 - 1011000) + 1011000); // случайное число в промежутке от 1011000 до 1011400
         getCharacteer(id) // получаем данные об одном персонаже (Метод написан в папке servesec/MarvelServise.js)
             .then(onCharacterLoaded) // пришедший объект сразу видоизменяется после метода getCharacteer. Пришедший аргумент автоматически подставляется в метод
+            .then(() => setProcess('confirmed'))
     }
-
-    const errorMessage = error ? <ErrorMessage/> : null; // если есть ошибка то показываем компонент с ошибкой
-    const spiner = loading ? <Spinner/> : null; // если есть загрузка то показываем компонент с загрузкой
-    const content = !(loading || error) ? <View character={character}/> : null; // если нет ошибки или загрузки то показываем контент
 
     return (
         <div className="randomchar">
             {/* Подставляем либо компонент с вёрсткой (смотреть ниже) либо компонент с svg спинером */}
-            {errorMessage}
-            {spiner}
-            {content} 
+            {setContent(process, View, character)} 
             <div className="randomchar__static">
                 <p className="randomchar__title">
                     Random character for today!<br/>
@@ -55,8 +49,8 @@ const RandomChar = () => {
 
 }
 
-const View = ({character}) => { // вынесли часть вёстки из гланого компонента
-    const {name, description, thumbnail, homepage, wiki} = character;
+const View = ({data}) => { // вынесли часть вёстки из гланого компонента
+    const {name, description, thumbnail, homepage, wiki} = data;
 
     let thumbnailStyle = {
         width: '180px',

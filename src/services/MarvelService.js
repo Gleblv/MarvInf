@@ -1,7 +1,7 @@
 import { useHttp } from "../hooks/http.hook";
 
 const useMarvelService = () => {
-    const {loading, request, error, clearError} = useHttp();
+    const {request, clearError, process, setProcess} = useHttp();
 
     const _apiBase = "https://gateway.marvel.com:443/v1/public/";
     const _apiKey = "apikey=56c5cb94b120889883bcc2d2ebcd6bb7";
@@ -22,7 +22,6 @@ const useMarvelService = () => {
         // if (res.data.results[0].description.length > 220) { // если описание слишеом длинное то обрезаем
         //     res.data.results[0].description.substring = res.data.results[0].description.substring(0, 220);
         // }
-
         return _transformCharacter(res.data.results[0]); // возвращаем уже видоизменённый объект
     }
 
@@ -67,7 +66,14 @@ const useMarvelService = () => {
         }
     }
 
-    return {loading, error, getAllCharacteers, getCharacteer, getCharacterByName, getComics, getComic, clearError}
+    return {process, 
+            setProcess,
+            getAllCharacteers, 
+            getCharacteer, 
+            getCharacterByName, 
+            getComics, 
+            getComic, 
+            clearError}
 }
 
 export default useMarvelService;

@@ -2,16 +2,14 @@ import { useState, useEffect } from 'react';
 import propTypes from 'prop-types';
 
 import useMarvelService from '../../services/MarvelService';
-import Spinner from '../spinner/spinner';
-import ErrorMessage from '../errorMessage/errorMessage';
-import Skeleton from '../skeleton/Skeleton';
+import setContent from '../../utils/setContent';
 
 import './charInfo.scss';
 
 const CharInfo = (props) => {
     const [character, setCharacters] = useState(null);
 
-    const {loading, error, getCharacteer, clearError} = useMarvelService();
+    const {process, setProcess, getCharacteer, clearError} = useMarvelService();
 
     useEffect(() => {
         updateChar();
@@ -34,29 +32,23 @@ const CharInfo = (props) => {
 
         getCharacteer(charId)
             .then(onCharacterLoaded)
+            .then(() => setProcess('confirmed'))
     }
 
     const onCharacterLoaded = (character) => { // перекидываем пришедшие данные в state
         setCharacters(character);
     }
 
-    const skeleton = character || loading || error ? null : <Skeleton/> // если всё загрузилось, но не выбран персонаж, то вставляем заглушку
-    const errorMessage = error ? <ErrorMessage/> : null; // если есть ошибка то показываем компонент с ошибкой
-    const spiner = loading ? <Spinner/> : null; // если есть загрузка то показываем компонент с загрузкой
-    const content = !(loading || error || !character) ? <View character={character}/> : null; // если нет ошибки или загрузки то показываем контент
-
     return (
         <div className="char__info">
-            {skeleton}
-            {errorMessage}
-            {spiner}
-            {content}
+            {setContent(process, View, character)}
         </div>
     )
 }
 
-const View = ({character}) => {
-    const {name, description, thumbnail, homepage, wiki, comics} = character;
+const View = ({data}) => {
+    const {name, description, thumbnail, homepage, wiki, comics} = data;
+
 
     let imgStyle = {"objectFit" : "cover"};
     if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
